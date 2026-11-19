@@ -1,515 +1,127 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Gate21 Sensor Overblik</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Prototype af et dashboard, der viser persontællende sensorer på et interaktivt kort." />
+  <title>Gate21 · Smart Sensor Overblik</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-    />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
 
-    <link
-            rel="stylesheet"
-            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
-
-    <style>
-        :root {
-          --gate-yellow: #ffd200;
-          --gate-green: #5f775f;
-          --gate-dark: #111111;
-          --gate-text: #1f1f1f;
-          --gate-muted: #6a746f;
-          --gate-bg: #f7f8f7;
-          --gate-white: #ffffff;
-          --border-light: #ececec;
-          --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.04);
-          --max-width: 1400px;
-        }
-
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        html {
-          scroll-behavior: smooth;
-        }
-
-        body {
-          font-family: "Inter", sans-serif;
-          background: var(--gate-bg);
-          color: var(--gate-text);
-          line-height: 1.6;
-        }
-
-        a {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .container {
-          width: min(var(--max-width), calc(100% - 80px));
-          margin: 0 auto;
-        }
-
-        header {
-          position: sticky;
-          top: 0;
-          z-index: 1000;
-          background: var(--gate-white);
-          border-bottom: 1px solid var(--border-light);
-        }
-
-        .header-inner {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          min-height: 88px;
-        }
-
-        .logo {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 56px;
-          height: 56px;
-          border: 2px solid var(--gate-yellow);
-          font-weight: 700;
-          font-size: 12px;
-          line-height: 1;
-          text-align: center;
-          color: var(--gate-dark);
-          letter-spacing: 0.03em;
-        }
-
-        nav {
-          display: flex;
-          gap: 36px;
-        }
-
-        nav a {
-          font-size: 16px;
-          font-weight: 500;
-          color: var(--gate-dark);
-          transition: color 0.25s ease;
-        }
-
-        nav a:hover {
-          color: var(--gate-green);
-        }
-
-        .hero {
-          background: var(--gate-white);
-          padding: 80px 0;
-        }
-
-        .hero-inner {
-          display: grid;
-          grid-template-columns: 1.2fr 0.8fr;
-          gap: 60px;
-          align-items: center;
-        }
-
-        .hero-text h1 {
-          font-size: clamp(42px, 6vw, 72px);
-          line-height: 1.05;
-          font-weight: 700;
-          color: var(--gate-dark);
-          margin-bottom: 24px;
-        }
-
-        .hero-text p {
-          font-size: 20px;
-          max-width: 620px;
-          color: var(--gate-muted);
-          margin-bottom: 36px;
-        }
-
-        .hero-text button,
-        .modal-content button {
-          background: var(--gate-yellow);
-          color: var(--gate-dark);
-          border: none;
-          padding: 16px 34px;
-          font-size: 16px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.25s ease;
-        }
-
-        .hero-text button:hover,
-        .modal-content button:hover {
-          background: var(--gate-dark);
-          color: var(--gate-white);
-        }
-
-        .hero-card {
-          background: var(--gate-white);
-          border-left: 4px solid var(--gate-yellow);
-          padding: 36px;
-          box-shadow: var(--shadow-soft);
-        }
-
-        .hero-card h3 {
-          font-size: 24px;
-          margin-bottom: 24px;
-          color: var(--gate-dark);
-        }
-
-        .stat {
-          margin-bottom: 24px;
-        }
-
-        .stat:last-child {
-          margin-bottom: 0;
-        }
-
-        .stat span {
-          display: block;
-          font-size: 14px;
-          color: var(--gate-muted);
-          margin-bottom: 6px;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-        }
-
-        .stat strong {
-          font-size: 32px;
-          font-weight: 700;
-          color: var(--gate-green);
-        }
-
-        .section {
-          background: var(--gate-green);
-          padding: 80px 0;
-        }
-
-        .section-title {
-          margin-bottom: 40px;
-        }
-
-        .section-title h2 {
-          font-size: 48px;
-          color: var(--gate-white);
-          margin-bottom: 12px;
-        }
-
-        .section-title p {
-          font-size: 18px;
-          color: rgba(255, 255, 255, 0.85);
-        }
-
-        .dashboard {
-          display: grid;
-          grid-template-columns: 320px 1fr;
-          gap: 30px;
-          align-items: start;
-        }
-
-        .sensor-list {
-          background: var(--gate-white);
-          padding: 24px;
-          box-shadow: var(--shadow-soft);
-        }
-
-        .sensor-item {
-          padding: 18px;
-          background: #f8f8f8;
-          border-left: 4px solid var(--gate-yellow);
-          margin-bottom: 16px;
-          transition: transform 0.25s ease, background 0.25s ease;
-          cursor: pointer;
-        }
-
-        .sensor-item:last-child {
-          margin-bottom: 0;
-        }
-
-        .sensor-item:hover {
-          transform: translateX(4px);
-          background: #f2f2f2;
-        }
-
-        .sensor-item h4 {
-          font-size: 17px;
-          color: var(--gate-dark);
-          margin-bottom: 4px;
-        }
-
-        .sensor-item p {
-          font-size: 14px;
-          color: var(--gate-muted);
-        }
-
-        #map {
-          width: 100%;
-          height: 650px;
-          box-shadow: var(--shadow-soft);
-        }
-
-        footer {
-          background: var(--gate-white);
-          border-top: 1px solid var(--border-light);
-          padding: 30px 0;
-          text-align: center;
-          color: var(--gate-muted);
-          font-size: 14px;
-        }
-
-        .modal-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.55);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 3000;
-          padding: 20px;
-        }
-
-        .modal-content {
-          background: var(--gate-white);
-          max-width: 560px;
-          width: 100%;
-          padding: 36px;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-          border-left: 5px solid var(--gate-yellow);
-        }
-
-        .modal-content h2 {
-          font-size: 28px;
-          margin-bottom: 16px;
-          color: var(--gate-dark);
-        }
-
-        .modal-content p {
-          color: var(--gate-muted);
-          font-size: 16px;
-          margin-bottom: 24px;
-        }
-
-        @media (max-width: 1024px) {
-          .hero-inner,
-          .dashboard {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-card {
-            max-width: 420px;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .container {
-            width: calc(100% - 40px);
-          }
-
-          nav {
-            display: none;
-          }
-
-          .hero {
-            padding: 60px 0;
-          }
-
-          .section {
-            padding: 60px 0;
-          }
-
-          .section-title h2 {
-            font-size: 36px;
-          }
-
-          #map {
-            height: 500px;
-          }
-        }
-    </style>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
-<div class="modal-overlay" id="infoModal">
-    <div class="modal-content">
-        <h2>Om sensorerne</h2>
-        <p>
-            Sensorerne måler, hvor mange mennesker der går forbi dem uanset retning
-            ved hjælp af temperaturmåling. Dataen kan hjælpe kommunen med at forstå,
-            hvor ressourcer bør placeres, og understøtte bedre beslutningstagning.
-        </p>
-        <button onclick="closeModal()">Forstået</button>
+  <!-- Info-dialog: vises ved første besøg og kan åbnes igen fra "Om sensorerne" -->
+  <dialog class="modal" id="info-modal" aria-labelledby="info-modal-title">
+    <h2 id="info-modal-title">Om sensorerne</h2>
+    <p>
+      Sensorerne måler, hvor mange mennesker der går forbi dem, uanset retning,
+      ved hjælp af temperaturmåling. Dataene kan hjælpe kommunen med at forstå,
+      hvor ressourcer bør placeres, og understøtte bedre beslutninger.
+    </p>
+    <form method="dialog">
+      <button class="btn">Forstået</button>
+    </form>
+  </dialog>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a href="#top" class="logo" aria-label="Til toppen">GATE<br />21</a>
+
+      <nav class="site-nav" aria-label="Hovedmenu">
+        <a href="#overblik">Overblik</a>
+        <a href="#sensorkort">Sensorkort</a>
+        <a href="#om">Om projektet</a>
+      </nav>
     </div>
-</div>
+  </header>
 
-<header>
-    <div class="container header-inner">
-        <div class="logo">
-            GATE<br/>21
+  <main id="top">
+    <section class="hero" id="overblik">
+      <div class="container hero__inner">
+        <div class="hero__text">
+          <h1>Smart Sensor Overblik</h1>
+          <p>
+            Se sensorerne på et interaktivt kort og få overblik over, hvor mange
+            mennesker der bevæger sig forbi de forskellige placeringer.
+          </p>
+          <div class="hero__actions">
+            <a href="#sensorkort" class="btn">Se sensorer</a>
+            <button type="button" class="btn btn--ghost" id="open-info">Om sensorerne</button>
+          </div>
         </div>
 
-        <nav>
-            <a href="#">Dashboard</a>
-            <a href="#">Sensorer</a>
-            <a href="#">Analyse</a>
-            <a href="#">Kontakt</a>
-        </nav>
-    </div>
-</header>
-
-<section class="hero">
-    <div class="container hero-inner">
-
-        <div class="hero-text">
-            <h1>Smart Sensor Overblik</h1>
-
-            <p>
-                Visualiser sensorer på et interaktivt kort og få overblik over,
-                hvor mange mennesker der bevæger sig forbi forskellige placeringer.
-            </p>
-
-            <button onclick="document.getElementById('sensor-kort').scrollIntoView()">
-                Se Sensorer
-            </button>
-        </div>
-
-        <div class="hero-card">
-            <h3>System Status</h3>
-
+        <aside class="stat-card" aria-label="Systemstatus">
+          <h2 class="stat-card__title">Systemstatus</h2>
+          <dl>
             <div class="stat">
-                <span>Aktive Sensorer</span>
-                <strong>128</strong>
+              <dt>Aktive sensorer</dt>
+              <dd id="stat-sensors">–</dd>
             </div>
-
             <div class="stat">
-                <span>Målemetode</span>
-                <strong>Temp.</strong>
+              <dt>Personer målt i alt</dt>
+              <dd id="stat-total">–</dd>
             </div>
-
             <div class="stat">
-                <span>Seneste Opdatering</span>
-                <strong>2 min</strong>
+              <dt>Travleste placering</dt>
+              <dd id="stat-busiest">–</dd>
             </div>
-        </div>
+          </dl>
+        </aside>
+      </div>
+    </section>
 
-    </div>
-</section>
-
-<section class="section" id="sensor-kort">
-    <div class="container">
-
-        <div class="section-title">
-            <h2>Sensorkort</h2>
-            <p>Eksempel på sensorplaceringer og persontælling via temperaturmåling.</p>
-        </div>
+    <section class="section section--green" id="sensorkort">
+      <div class="container">
+        <header class="section__header">
+          <h2>Sensorkort</h2>
+          <p>Eksempel på sensorplaceringer og persontælling via temperaturmåling.</p>
+        </header>
 
         <div class="dashboard">
-            <div class="sensor-list" id="sensorList"></div>
-            <div id="map"></div>
+          <ul class="sensor-list" id="sensor-list" aria-label="Sensorer"></ul>
+          <div class="map" id="map" role="region" aria-label="Kort over sensorer"></div>
         </div>
+      </div>
+    </section>
+
+    <section class="section" id="om">
+      <div class="container about">
+        <h2>Om projektet</h2>
+        <p>
+          Prototypen er udviklet som et studieprojekt på Roskilde Universitet med
+          Gate21 som case. Formålet er at vise, hvordan data fra persontællende
+          sensorer kan gøres overskuelige for kommuner, så de lettere kan se, hvor
+          der er mest aktivitet, og planlægge derefter.
+        </p>
+        <p class="about__note">
+          Bemærk: sensordataene på siden er eksempeldata.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      Studieprojekt · Roskilde Universitet · Case: Gate21
     </div>
-</section>
+  </footer>
 
-<footer>
-    © 2025 Gate21 • Smart City Dashboard
-</footer>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-    function closeModal() {
-      document.getElementById("infoModal").style.display = "none";
-    }
-
-    const map = L.map("map").setView([55.6761, 12.5683], 10);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors"
-    }).addTo(map);
-
-    const sensors = [
-      {
-        name: "Sensor A01",
-        type: "Persontælling via temperaturmåling",
-        location: "København",
-        peopleCount: 342,
-        coords: [55.6761, 12.5683]
-      },
-      {
-        name: "Sensor B14",
-        type: "Persontælling via temperaturmåling",
-        location: "Lyngby",
-        peopleCount: 187,
-        coords: [55.7704, 12.5038]
-      },
-      {
-        name: "Sensor C08",
-        type: "Persontælling via temperaturmåling",
-        location: "Roskilde",
-        peopleCount: 264,
-        coords: [55.6415, 12.0803]
-      },
-      {
-        name: "Sensor D22",
-        type: "Persontælling via temperaturmåling",
-        location: "Hvidovre",
-        peopleCount: 119,
-        coords: [55.6572, 12.4736]
-      },
-      {
-        name: "Sensor E31",
-        type: "Persontælling via temperaturmåling",
-        location: "Ballerup",
-        peopleCount: 208,
-        coords: [55.7317, 12.3636]
-      }
-    ];
-
-    const sensorList = document.getElementById("sensorList");
-
-    sensors.forEach(sensor => {
-      const item = document.createElement("div");
-      item.className = "sensor-item";
-      item.innerHTML = `
-        <h4>${sensor.name}</h4>
-        <p>${sensor.location} • ${sensor.peopleCount} personer målt</p>
-      `;
-
-      const marker = L.marker(sensor.coords).addTo(map);
-
-      marker.bindPopup(`
-        <div style="font-family: Inter, sans-serif; min-width: 200px;">
-          <h3 style="margin:0 0 8px; color:#5f775f;">
-            ${sensor.name}
-          </h3>
-          <p style="margin:0; color:#555;">
-            <strong>Type:</strong> ${sensor.type}
-          </p>
-          <p style="margin:4px 0 0; color:#555;">
-            <strong>Lokation:</strong> ${sensor.location}
-          </p>
-          <p style="margin:4px 0 0; color:#555;">
-            <strong>Antal personer:</strong> ${sensor.peopleCount}
-          </p>
-          <p style="margin:4px 0 0; color:#555;">
-            Målingen tæller personer uanset hvilken retning, de bevæger sig.
-          </p>
-        </div>
-      `);
-
-      item.addEventListener("click", () => {
-        map.setView(sensor.coords, 13, {
-          animate: true
-        });
-        marker.openPopup();
-      });
-
-      sensorList.appendChild(item);
-    });
-</script>
-
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="js/sensors.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
